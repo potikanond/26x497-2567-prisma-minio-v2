@@ -17,7 +17,7 @@ services:
       - POSTGRES_PASSWORD=12345678
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - D:\workspace\cpe497\postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
 
   # Database admin panel
   adminer:
@@ -106,3 +106,4 @@ volumes:
   data1-2:
   data2-1:
   data2-2:
+  postgres-data:
