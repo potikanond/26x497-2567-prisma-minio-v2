@@ -18,17 +18,21 @@ We start by installing all packages required by the project. This packages are l
 npm install
 ```
 
-## 2. Start a Postgres Database server container
+## 2. Create backend services
+
+For this demo app, we need a `PostgreSQL` database and a `MinIO` object storage. We can use `docker run` commands to create containers for each service.
+
+### 2.1 Start a `Postgres` Database server container
 
 We can create a database container using the following command. We will use this database server to store all users todo lists.
 
 Before running this command, we need to create the `D:\postgres-data` directory to use as `bind-mount` volume to persistently store database files.
 
 ```bash
-docker run -d --name postgresCont -p 5432:5432 -e POSTGRES_DB=mytodo -e POSTGRES_PASSWORD=12345678 -e PGDATA=/var/lib/postgresql/data/pgdata -v D:\postgres-data:/var/lib/postgresql/data postgres
+docker run -d --name postgresCont -p 5432:5432 -e POSTGRES_DB=mytodo -e POSTGRES_PASSWORD=12345678 -e PGDATA=/var/lib/postgresql/data/pgdata -v postgres-data:/var/lib/postgresql/data postgres
 ```
 
-## 3. Start a MinIO object storage container
+### 2.2 Start a MinIO object storage container
 
 Now we can create an object storage container as well. The `Todo app` uses this object storage to store user uploaded files.
 
@@ -38,7 +42,7 @@ Before running this command, we need to create the `D:\minio-data` directory to 
 docker run -d -p 9000:9000 -p 9090:9090 --name minio -v D:\minio-data:/data -e "MINIO_ROOT_USER=root" -e "MINIO_ROOT_PASSWORD=12345678" quay.io/minio/minio server /data --console-address ":9090"
 ```
 
-## 4. Using Docker-compose to start all services
+### 2.3 Using Docker-compose to start database and object sotrage services
 
 Instead of running docker commands one-by-one to start each service separately, we can use `docker-compose` to manage everything.
 
@@ -64,9 +68,9 @@ docker compose -f ./docker/docker-compose.yml stop
 docker compose -f ./docker/docker-compose.yml start
 ```
 
-## 5. Generate Prisma client from schema (execute once per project)
+## 3. Create database for Todo app 
 
-Firstly, we need to use prisma to intialize database and tables in the database server.
+Once having access to a database server, we need to use `prisma` to intialize database and tables in the database server.
 
 ```bash
 npx prisma generate
@@ -93,8 +97,6 @@ See other ways of importing Prisma Client: http://pris.ly/d/importing-client
 
 ```
 
-## 6. Initialize database schema (execute once per database)
-
 Now we can initialize the database and tables using the following command.
 
 ```bash
@@ -113,17 +115,17 @@ Your database is now in sync with your Prisma schema. Done in 390ms
 ✔ Generated Prisma Client (v5.2.0) to .\node_modules\@prisma\client in 110ms
 
 ```
-
+## 4. Create a user for Todo app
 After initialize the database, use a Postgres database client to log in as `postgres` user with the password `12345678`. We shoud see the `mytodo` database. Add a few users in the `User` table. We will use these users to test the "Todo App".
 
-## 7. Basic Minio object storage configuration
+## 5. Basic MinIO object storage configuration
 
-Secondly, after starting the Minio container, use a web browser to open "http://localhost:9000"
+After starting the Minio container, use a web browser to open "http://localhost:9000"
 
 - Log in to the management console using the username `root` and password `12345678`.
 - Create a storage bucket with the name as specified in the `.env` file (`OBJ_BUCKET` variable).
 
-## 8. Run the development server
+## 6. Run the development server
 
 After setup and configure all back-end services (Postgres database server and Minio object storage service), we can now start the development server.
 
@@ -143,7 +145,7 @@ After that we can start the `development` server.
 npm run dev
 ```
 
-## 9. Test the production server
+## 7. Test the production server
 
 To do this, we have to build a production server by running this command.
 
@@ -159,7 +161,7 @@ npm run start
 
 ---
 
-## Build docker image from `Todo app` project
+## 8. Build a docker image from `Todo app` project
 
 We need to create a `Dockerfile` at the root of project directory. We use multistages build.
 
@@ -223,7 +225,7 @@ docker build -t potikanond/todo-postgres-minio .
 
 ---
 
-## Create `Todo app` container
+## 9. Create `Todo app` container
 
 When using `docker run ...` command or using `docker-compose` configuration file to create a container of the app, it is necessary to also provide environment variables to the app.
 
