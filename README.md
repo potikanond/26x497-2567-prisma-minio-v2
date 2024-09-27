@@ -1,4 +1,4 @@
-# Application Deployment tutorial
+# Todo app with MinIO object storage
 
 This **"Todo App"** project is developed using `Next.js`:
 
